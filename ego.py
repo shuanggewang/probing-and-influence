@@ -1,5 +1,6 @@
 from cmath import e
 from hashlib import new
+from this import s
 import utils
 import config
 import copy
@@ -9,79 +10,57 @@ from utils import Struct
 
 class Ego:
     def __init__(self):
+        self.id = 0
+        self.phase = 0
+        self.head_id = None
         return
-    
-    def predict_human_control(self, features, state, u_r, phi):
-        reward_list=[]
-        for u_h in config.human_action_space:
-            next_state = state.update(u_r, u_h, config.d_t_predict)
-            reward_list.append(features.weighted_sum(next_state, phi))
-        pos = np.argmax(reward_list)
-        return reward_list[pos]
-    
-    """
-    def generate_control(self, features, state, belief):
-        OPT = {}
-        for t in range(config.Horizon):
-            print(t)
-            struct_list = []
-            for ego_action in config.ego_action_space:
-                if t == 0:
-                    human_action_list=[]
-                    for i in range(len(belief.particles)):
-                        
-                        #predict human control
-                        temp_human_action = self.predict_human_control(features, state, ego_action, belief.particles[i])
-                        human_action_list.append(temp_human_action)
+        
+    def find_headway(self, state):
+        headway = []
+        for i in range(2, len(state.x)):
+            h = state.x[i] - state.x[0]
+            if h >= 0:
+                headway.append(h)
+            else:
+                break
+        print(headway)
+        return np.argmin(headway) + 2
 
-                    human_action = np.dot(human_action_list, belief.prob)
-                    
-                    next_state = state.update(ego_action, human_action, config.d_t_predict)
-                        
-                    new_belief = belief.update(features, state, ego_action, human_action, config.d_t_predict)
-                    
-                    reward = belief.entropy() - new_belief.entropy()
-                    print(ego_action, reward)
-                    struct = Struct(ego_action, next_state, new_belief, reward, None)
-                else:
-                    reward_sum = []
-                    for prev_struct in OPT[t-1]:
-                        human_action_list=[]
-                        for i in range(len(belief.particles)):
-                            
-                            #predict human control
-                            temp_human_action = self.predict_human_control(features, prev_struct.state, ego_action, belief.particles[i])
-                            human_action_list.append(temp_human_action)
-
-                        human_action = np.dot(human_action_list, belief.prob)
-                        
-                        #append state
-                        next_state = prev_struct.state.update(ego_action, human_action, config.d_t_predict)
-                        
-                        #append belief
-                        new_belief = prev_struct.belief.update(features, prev_struct.state, ego_action, human_action, config.d_t_predict)
-    
-                        reward = prev_struct.belief.entropy() - new_belief.entropy()
-                        reward_sum.append(prev_struct.reward + reward)
-                        
-                    pos = np.argmax(reward_sum)
-                    new_action = config.ego_action_space[pos]
-                    new_state = OPT[t-1][pos].state.update(new_action, human_action, config.d_t_predict)
-                    new_belief = OPT[t-1][pos].belief.update(features, OPT[t-1][pos].state, ego_action, human_action, config.d_t_predict)
-                    struct = Struct(new_action, new_state, new_belief, reward_sum[pos], OPT[t-1][np.argmax(reward_sum)])
+    def generate_control(self, state):
+        match self.phase:
+            case 0:
+                if self.head_id == None:
+                    self.head_id = self.find_headway(state)
+                print("huh",  self.head_id, state.x[self.head_id] - state.x[self.id])
+                if ((state.x[self.head_id] - state.x[self.id]) >= 0):
+                    state.lane[0] = 0
+                    self.phase = 1
+                return 0
+            case 1:
+                if(state.lane[1]==0):
+                    self.head_id = 1
+                    self.phase = 2
+                reward = []
+                for i in config.ego_action_space:
+                    controls = [0 for i in range(len(state.x))]
+                    controls[self.id] = i
+                    new_state = state.update(controls, config.d_t)
+                    reward.append(-(new_state.x[self.head_id] - new_state.x[self.id] - 60)**2 -(new_state.v[self.head_id] - new_state.v[self.id])**2)
+                pos = np.argmax(reward)
+                return config.ego_action_space[pos]
+            case 2:
+                reward = []
+                for i in config.ego_action_space:
+                    controls = [0 for i in range(len(state.x))]
+                    controls[self.id] = i
+                    new_state = state.update(controls, config.d_t)
+                    reward.append(-(new_state.x[self.head_id] - new_state.x[self.id] - 30)**2 -(new_state.v[self.head_id] - new_state.v[self.id])**2)
+                pos = np.argmax(reward)
+                return config.ego_action_space[pos]
                 
-                struct_list.append(struct)
-            OPT[t] = struct_list
-        # backtracking
-        obj = max(OPT[config.Horizon - 1], key=lambda item: item.reward)
-        list = []
-        while(obj != None):
-            print(obj.reward)
-            list.insert(0, obj.control)
-            obj = obj.prev
-        return list
-    """
 
+
+"""
     def generate_control(self, features, state, belief):
         OPT = {}
         for t in range(config.Horizon):
@@ -143,28 +122,6 @@ class Ego:
             list.insert(0, obj.control)
             obj = obj.prev
         return list
-
 """
-    def generate_control(self, features, state, belief):
-        new_belief = copy.deepcopy(belief)
-        ego_action_list = []
-        human_action_list = []
-        for i in config.ego_action_space:
-            ego_action_list.append([i for index in range(config.Horizon)])
-        reward_list=[]
-
-        for ego_action in ego_action_list:
-            print(ego_action)
-            entropy_list=[]
-            for i in range(len(new_belief.particles)):
-                human_action = utils.dynamic_programming(features, state, ego_action, new_belief.particles[i])
-                for j in range(len(ego_action)):
-                    new_belief.update(features, state, ego_action[j], human_action[j])
-                entropy_list.append(new_belief.entropy())
-            reward_list.append(np.dot(new_belief.prob, entropy_list))
-            print(reward_list)
-        return ego_action[np.argmin(reward_list)]
-"""
-   
                 
                                      

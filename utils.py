@@ -10,14 +10,16 @@ class Struct:
         self.reward = reward
         self.prev = prev
 
+def state_to_plot(state):
+    relative = []
+    for i in range(len(state.x)):
+        relative.append((state.x[i] - state.x[0])*-config.plot_to_real_ratio)
+    relative = [each + 600 for each in relative]
+    return relative
+    
+    
 
-"""
-class Struct:
-    def __init__(self, state, reward, prev):
-        self.state = state
-        self.reward = reward
-        self.prev = prev
-"""
+
 """
 def dynamic_programming(features, state, u_r, phi):
     OPT = {}
