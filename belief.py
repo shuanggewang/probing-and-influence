@@ -7,6 +7,7 @@ class Belief:
         self.particles = particles
         self.prob = prob
 
+
     def update(self, features, state, u_r, u_h, d_t):
         next_state = state.update(u_r, u_h, d_t)
         p = [0 for i in range(len(self.particles))]

@@ -1,5 +1,3 @@
-
-
 from pickletools import optimize
 import time
 import math
@@ -14,24 +12,27 @@ from idm import IDM
 from features import Features
 from ego import Ego
 
+
 particles = utils.generate_particles()
 idm = IDM()
-belief=Belief(particles, [1/len(particles) for i in range(len(particles))])
+belief = Belief(particles, [1/len(particles) for i in range(len(particles))])
 features = Features()
-ego=Ego()
-state = State(100, 0, 15, 10, 0, 0, 0)
+ego = Ego()
+state = State(100, 0, 15, 20, 0, 0, 0)
 x = [r'$\varphi_{'+str(i)+'}$' for i in range(config.rows)]
+
 plt.ion()
 figure = plt.figure()
+
 counter = 0
 image = 0
 
 if __name__ == "__main__":
     while(True):
         u_h = [idm.generate_control(state)]
-        if counter < 150:
+        if counter < 50:
             u_r = [0]
-        elif counter < 200:
+        elif counter < 100:
             if (counter % 10 ==0):
                 u_r = ego.generate_control(features, state, belief)
         else:
@@ -46,11 +47,10 @@ if __name__ == "__main__":
         ax.set_ylabel('$Probability$')
         figure.canvas.draw()
         if counter == 0:
-            figure.savefig("./Desktop/CMU/Software/probing/fig/probing_{}.jpg".format(image), dpi=300)
+            figure.savefig("./fig/probing_{}.jpg".format(image), dpi=300)
             image +=1
         figure.canvas.flush_events()
         figure.clf()
         belief = belief.update(features, state, u_r[0], u_h[0], config.d_t)
-        print(belief.prob)
         state.print()
         counter += 1

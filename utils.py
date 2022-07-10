@@ -1,5 +1,9 @@
 import config
 import numpy as np
+import math
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 
 class Struct:
@@ -46,11 +50,11 @@ def dynamic_programming(features, state, u_r, phi):
 
 
 def generate_phi(i, j):
-    temp = [[(1/config.cols/config.rows)for i in range(config.cols)]
-            for j in range(config.rows)]
+    temp = [[(1/config.cols/config.rows)for i in range(config.cols)]for j in range(config.rows)]
     for x in range(config.rows):
         for y in range(config.cols):
-            temp[x][y] = -((x-i)**2 + (y-j)**2)
+            #temp[x][y] = -((x-i)**2 + (y-j)**2)
+            temp[x][y] = np.exp(-((x-i)**2 + (y-j)**2)/10)
     flat = np.array(temp).flatten()
     mini = min(flat)
     for x in range(config.rows):
@@ -67,9 +71,24 @@ def generate_phi(i, j):
 
 def generate_particles():
     #temp = [(i, 6) for i in range(config.cols)]
-    temp = [(i, 6) for i in range(config.cols)]
+    temp = [(17, i) for i in range(config.cols)]
     particles = []
     for index in temp:
         phi = generate_phi(index[0], index[1])
         particles.append(phi)
     return particles
+
+if __name__ == "__main__":
+    particles = generate_particles()
+    figure = plt.figure()
+    ax = figure.add_subplot(111, projection='3d')
+    x = y = np.linspace(0, config.cols, config.cols)
+    X, Y = np.meshgrid(x, y)
+    Z = np.array(particles[10])
+    my_col = cm.jet(Z)
+    my_col = cm.jet(Z)
+    ax.plot_surface(X, Y, Z)
+    ax.set_xlabel('Headway')
+    ax.set_ylabel('Velocity')
+    ax.set_zlabel('Probability')
+    plt.show()
