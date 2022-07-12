@@ -13,9 +13,9 @@ import utils
 import config
 
 
-WIDTH = 500
+WIDTH = 200
 HEIGHT = 1000
-FPS = 15
+FPS = 40
 count = 0
 
 
@@ -45,7 +45,7 @@ class Lane(object):
         self.lane_rect = pygame.draw.polygon(
             displaySurface, self.color, self.vertices)
 
-        self._markerWidth = 10
+        self._markerWidth = 5
         self._markerLen = 50
         self._markerGap = 30
         self._markerNum = HEIGHT / (self._markerLen + self._markerGap)
@@ -68,8 +68,8 @@ class Lane(object):
                 displaySurface, [255, 255, 255], self.marker_vertices)
             self.markerList.append(marker)
 
-            bush_img = pygame.image.load('./images/bush.png')
-            bush_img = pygame.transform.scale(bush_img, (64, 64))
+            bush_img = pygame.image.load('./images/tree.png')
+            bush_img = pygame.transform.scale(bush_img, (30, 30))
             bush_rect = bush_img.get_rect()
 
             if self.number == 1:
@@ -146,8 +146,6 @@ class Agent(Obstacles):
         self.mutable_bb.move_ip([x, y])
 
 
-# ---------------------- Environment----------------------------------------------
-
 class Environment(object):
     def __init__(self, lane_list, obj_list, agent_list, state):
         
@@ -188,31 +186,6 @@ class Environment(object):
 
         pygame.display.update()
     
-    
-        
-    """
-    def step(self, state, new_state):
-        
-        
-
-        # next_speed, next_heading, lane_angle, lane_number, all_lane distance from center, off_road, opp_laneNum, opp_dist 
-        for l in self.lane_list:
-            l.relative_move([0, (new_state.x[0] - state.x[0])*10])
-        
-        for a in self.agent_list:
-            if(new_state.lane[0] == 0 and a.mutable_bb.center[0] != 200):
-                a.move( [-2, 0] )
-
-        i = 2
-        for o in self.obj_list:
-            o.move([0, (((state.x[i] - state.x[0]) - (new_state.x[i] - new_state.x[0]))*10)])
-            i += 1
-
-        self._renderObj()
-        
-        return
-    """
-    
     def step(self, state, prev_state):
         global count
         pos = utils.state_to_plot(state)
@@ -223,11 +196,11 @@ class Environment(object):
             l.relative_move([0, (state.x[0] - prev_state.x[0])*config.plot_to_real_ratio])
         
         # lane changing
-        if(state.lane[0] == 0 and self.agent_list[0].mutable_bb.center[0] != 200 and state.lane[1]):
-            self.agent_list[0].move([-2, 0])
+        if(state.lane[0] == 0 and self.agent_list[0].mutable_bb.center[0] != config.left_lane_center and state.lane[1]):
+            self.agent_list[0].move([-1, 0])
         
-        if(state.lane[1] == 0 and self.agent_list[1].mutable_bb.center[0] != 200 and not state.lane[0]):
-            self.agent_list[1].move([-2, 0])
+        if(state.lane[1] == 0 and self.agent_list[1].mutable_bb.center[0] != config.left_lane_center and not state.lane[0]):
+            self.agent_list[1].move([-1, 0])
         
         # move human
         self.agent_list[1].move([0, pos[1] - self.agent_list[1].mutable_bb.center[1]])
@@ -238,9 +211,10 @@ class Environment(object):
         for o in self.obj_list:
             o.move([0, pos[i] - o.mutable_bb.center[1]])
             i += 1
-        
-        pygame.image.save(displaySurface, "./fig/phase_{}.jpg".format(count))
+            
         self._renderObj()
+        
+        pygame.image.save(displaySurface, "./figures/phase_{}.jpg".format(count))
         
         count += 1
 

@@ -54,7 +54,7 @@ class Ego:
                     controls = [0 for i in range(len(state.x))]
                     controls[self.id] = i
                     new_state = state.update(controls, config.d_t)
-                    reward.append(-(new_state.x[self.head_id] - new_state.x[self.id] - 30)**2 -(new_state.v[self.head_id] - new_state.v[self.id])**2)
+                    reward.append(-(new_state.x[self.head_id] - new_state.x[self.id] - 15)**2 -(new_state.v[self.head_id] - new_state.v[self.id])**2)
                 pos = np.argmax(reward)
                 return config.ego_action_space[pos]
                 

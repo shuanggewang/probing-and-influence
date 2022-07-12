@@ -15,23 +15,26 @@ ego = Ego()
 idm = Idm()
 cars = 8
 acc_list = []
+
 for i in range(2, cars):
     acc_list.append(Acc(i))
 
 dynamics = [[0, 20], [-15, 20], [45, 20], [30, 20], [15, 20], [0, 20], [-15, 20], [-30, 20]]
+
 lanes = [1,1] + [0 for i in range(2,cars-2)]
+
 state = State(dynamics, lanes)
 
 # lanes
-l1, l2 = Lane([150, 0], 100, 1), Lane([250, 0], 100, 2)
+l1, l2 = Lane([50, 0], 50, 1), Lane([100, 0], 50, 2)
 
 lane_list = [l1, l2]
 
 pos = utils.state_to_plot(state)
 
 # agents
-ego_P, ego_S = [300, pos[0]], 19
-human_P, human_S = [300, pos[1]], 19
+ego_P, ego_S = [config.right_lane_center, pos[0]], 19
+human_P, human_S = [config.right_lane_center, pos[1]], 19
 
 
 robot = Agent('./images/car-yellow.png', ego_P, ego_S)
@@ -43,7 +46,7 @@ agent_list = [robot, human]
 obj_list = []
 
 for i in range(2, cars):
-    obj_list.append(Obstacles('./images/car-white.png', [200, pos[5]], 20))
+    obj_list.append(Obstacles('./images/car-white.png', [config.left_lane_center, pos[5]], 20))
 
 
 if __name__ == '__main__':

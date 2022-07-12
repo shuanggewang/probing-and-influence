@@ -16,36 +16,6 @@ def state_to_plot(state):
         relative.append((state.x[i] - state.x[0])*-config.plot_to_real_ratio)
     relative = [each + 600 for each in relative]
     return relative
-    
-    
-
-
-"""
-def dynamic_programming(features, state, u_r, phi):
-    OPT = {}
-    for t in range(config.Horizon):
-        struct_list = []
-        for u_h in config.action_space:
-            if t == 0:
-                next_state = state.update(u_r[t], u_h, config.d_t_predict)
-                struct = Struct(next_state, features.weighted_sum(next_state, phi), None)
-            else:
-                reward_sum = []
-                for prev_struct in OPT[t-1]:
-                    next_state = prev_struct.state.update(u_r[t], u_h, config.d_t_predict)
-                    reward_sum.append(prev_struct.reward + features.weighted_sum(next_state, phi))
-                struct = Struct(OPT[t-1][np.argmax(reward_sum)].state.update(0, u_h, config.d_t_predict), reward_sum[np.argmax(reward_sum)], OPT[t-1][np.argmax(reward_sum)])
-            struct_list.append(struct)
-        OPT[t] = struct_list
-    # backtracking
-    obj = max(OPT[config.Horizon - 1], key=lambda item: item.reward)
-    list = []
-    while(obj != None):
-        list.insert(0, obj.state.u_h)
-        obj = obj.prev
-    return list
-"""
-
 
 def generate_phi(i, j):
     temp = [[(1/config.cols/config.rows)for i in range(config.cols)]
@@ -66,12 +36,44 @@ def generate_phi(i, j):
             temp[x][y] *= config.feature_norm
     return temp
 
-
 def generate_particles():
-    #temp = [(i, 6) for i in range(config.cols)]
     temp = [(i, 6) for i in range(config.cols)]
     particles = []
     for index in temp:
         phi = generate_phi(index[0], index[1])
         particles.append(phi)
     return particles
+
+
+def images_to_video():
+    import cv2
+    import numpy as np
+    import os
+    from os.path import isfile, join
+    pathIn= './figures/'
+    pathOut = './videos/video.avi'
+    fps = 40
+    frame_array = []
+    files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
+    #for sorting the file names properly
+    files.sort(key = lambda x: int(x[x.index("_")+1:x.index(".")]))
+    for i in range(len(files)):
+        filename = pathIn + files[i]
+        #reading each files
+        img = cv2.imread(filename)
+        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+        height, width, layers = img.shape
+        size = (width,height)
+        
+        #inserting the frames into an image array
+        frame_array.append(img)
+    
+    out = cv2.VideoWriter(pathOut,cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+    for i in range(len(frame_array)):
+        # writing to a image array
+        out.write(frame_array[i])
+    out.release()
+
+
+if __name__ == '__main__':
+    images_to_video()
