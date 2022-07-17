@@ -4,7 +4,7 @@ import numpy as np
 
 class IDM:
     def __init__(self):
-        self.v_0 = 20
+        self.v_0 = 25
         self.T = 1.5
         self.a = 0.73
         self.b = 1.67

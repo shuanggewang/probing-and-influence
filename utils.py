@@ -1,5 +1,9 @@
 import config
 import numpy as np
+import math
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 
 class Struct:
@@ -46,11 +50,11 @@ def dynamic_programming(features, state, u_r, phi):
 
 
 def generate_phi(i, j):
-    temp = [[(1/config.cols/config.rows)for i in range(config.cols)]
-            for j in range(config.rows)]
+    temp = [[(1/config.cols/config.rows)for i in range(config.cols)]for j in range(config.rows)]
     for x in range(config.rows):
         for y in range(config.cols):
-            temp[x][y] = -((x-i)**2 + (y-j)**2)
+            #temp[x][y] = -((x-i)**2 + (y-j)**2)
+            temp[x][y] = np.exp(-((x-i)**2 + (y-j)**2)/10)
     flat = np.array(temp).flatten()
     mini = min(flat)
     for x in range(config.rows):
@@ -66,10 +70,41 @@ def generate_phi(i, j):
 
 
 def generate_particles():
-    #temp = [(i, 6) for i in range(config.cols)]
-    temp = [(i, 6) for i in range(config.cols)]
+    temp = [(i, 9) for i in range(config.cols)]
     particles = []
     for index in temp:
         phi = generate_phi(index[0], index[1])
         particles.append(phi)
     return particles
+
+def plot_stacking(stacking):
+    x = [r'$\varphi_{'+str(i)+'}$' for i in range(config.rows)]
+    stacked = plt.figure()
+    kwargs = dict(alpha=0.3,  ec="k")
+    ax = stacked.add_subplot(111)
+    for i in range(len(stacking)):
+        ax.bar(x, stacking[i], **kwargs, label="{} s".format((i+1)*15), linewidth = 0, width=1)
+    ax.legend(loc='upper right')
+    ax.set_xticks([i*config.graph_gap for i in range(int(config.rows/config.graph_gap))])
+    ax.set_xticklabels([r'$\varphi_{'+str(i*config.graph_gap)+'}$' for i in range(int(config.rows/config.graph_gap))])
+    ax.set_ylabel('$Probability$')
+    stacked.savefig("./figures/probing_velocity_{}.jpg".format(len(stacking)), dpi=300)
+
+if __name__ == "__main__":
+    particles = generate_particles()
+    
+    figure = plt.figure()
+    ax = figure.add_subplot(111, projection='3d')
+    x = y = np.linspace(0, config.cols, config.cols)
+    X, Y = np.meshgrid(x, y)
+    Z = np.array(particles[15])
+    my_col = cm.jet(Z)
+    surf = ax.plot_surface(X, Y, Z, cmap=cm.jet, linewidth=0.001, vmin=0, vmax=0.03)
+    #ax.set_zlim(0, 0.03)
+    figure.colorbar(surf, location= "left", shrink=0.5, aspect=5)
+    #figure.colorbar(surf, shrink=0.5, aspect=5)
+    ax.set_xlabel('Headway')
+    ax.set_ylabel('Velocity')
+    ax.set_zlabel('Probability')
+    plt.savefig("./figures/2d.jpg", dpi=300)
+    plt.show()
