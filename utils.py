@@ -1,9 +1,5 @@
 import config
 import numpy as np
-import math
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
 
 
 class Struct:
@@ -14,47 +10,19 @@ class Struct:
         self.reward = reward
         self.prev = prev
 
-
-"""
-class Struct:
-    def __init__(self, state, reward, prev):
-        self.state = state
-        self.reward = reward
-        self.prev = prev
-"""
-"""
-def dynamic_programming(features, state, u_r, phi):
-    OPT = {}
-    for t in range(config.Horizon):
-        struct_list = []
-        for u_h in config.action_space:
-            if t == 0:
-                next_state = state.update(u_r[t], u_h, config.d_t_predict)
-                struct = Struct(next_state, features.weighted_sum(next_state, phi), None)
-            else:
-                reward_sum = []
-                for prev_struct in OPT[t-1]:
-                    next_state = prev_struct.state.update(u_r[t], u_h, config.d_t_predict)
-                    reward_sum.append(prev_struct.reward + features.weighted_sum(next_state, phi))
-                struct = Struct(OPT[t-1][np.argmax(reward_sum)].state.update(0, u_h, config.d_t_predict), reward_sum[np.argmax(reward_sum)], OPT[t-1][np.argmax(reward_sum)])
-            struct_list.append(struct)
-        OPT[t] = struct_list
-    # backtracking
-    obj = max(OPT[config.Horizon - 1], key=lambda item: item.reward)
-    list = []
-    while(obj != None):
-        list.insert(0, obj.state.u_h)
-        obj = obj.prev
-    return list
-"""
-
+def state_to_plot(state):
+    relative = []
+    for i in range(len(state.x)):
+        relative.append((state.x[i] - state.x[0])* - config.plot_to_real_ratio)
+    relative = [each + 50 for each in relative]
+    return relative
 
 def generate_phi(i, j):
-    temp = [[(1/config.cols/config.rows)for i in range(config.cols)]for j in range(config.rows)]
+    temp = [[(1/config.cols/config.rows)for i in range(config.cols)]
+            for j in range(config.rows)]
     for x in range(config.rows):
         for y in range(config.cols):
-            #temp[x][y] = -((x-i)**2 + (y-j)**2)
-            temp[x][y] = np.exp(-((x-i)**2 + (y-j)**2)/10)
+            temp[x][y] = -((x-i)**2 + (y-j)**2)
     flat = np.array(temp).flatten()
     mini = min(flat)
     for x in range(config.rows):
@@ -68,10 +36,8 @@ def generate_phi(i, j):
             temp[x][y] *= config.feature_norm
     return temp
 
-
 def generate_particles():
-    #temp = [(i, 6) for i in range(config.cols)]
-    temp = [(17, i) for i in range(config.cols)]
+    temp = [(i, 6) for i in range(config.cols)]
     particles = []
     for index in temp:
         phi = generate_phi(index[0], index[1])
@@ -79,31 +45,35 @@ def generate_particles():
     return particles
 
 
-def plot_stacking(stacking):
-    x = [r'$\varphi_{'+str(i)+'}$' for i in range(config.rows)]
-    stacked = plt.figure()
-    kwargs = dict(alpha=0.3,  ec="k")
-    ax = stacked.add_subplot(111)
-    for i in range(len(stacking)):
-        ax.bar(x, stacking[i], **kwargs, label="{} s".format((i+1)*10), linewidth = 0, width=1)
-    ax.legend(loc='upper right')
-    ax.set_xticks([i*config.graph_gap for i in range(int(config.rows/config.graph_gap))])
-    ax.set_xticklabels([r'$\varphi_{'+str(i*config.graph_gap)+'}$' for i in range(int(config.rows/config.graph_gap))])
-    ax.set_ylabel('$Probability$')
-    stacked.savefig("./figures/probing_headway_{}.jpg".format(len(stacking)), dpi=300)
+def images_to_video():
+    import cv2
+    import numpy as np
+    import os
+    from os.path import isfile, join
+    pathIn= './figures/'
+    pathOut = './videos/video.avi'
+    fps = 40
+    frame_array = []
+    files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
+    #for sorting the file names properly
+    files.sort(key = lambda x: int(x[x.index("_")+1:x.index(".")]))
+    for i in range(len(files)):
+        filename = pathIn + files[i]
+        #reading each files
+        img = cv2.imread(filename)
+        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+        height, width, layers = img.shape
+        size = (width,height)
+        
+        #inserting the frames into an image array
+        frame_array.append(img)
+    
+    out = cv2.VideoWriter(pathOut,cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+    for i in range(len(frame_array)):
+        # writing to a image array
+        out.write(frame_array[i])
+    out.release()
 
-if __name__ == "__main__":
-    particles = generate_particles()
-    figure = plt.figure()
-    ax = figure.add_subplot(111, projection='3d')
-    x = y = np.linspace(0, config.cols, config.cols)
-    X, Y = np.meshgrid(x, y)
-    Z = np.array(particles[10])
-    my_col = cm.jet(Z)
-    my_col = cm.jet(Z)
-    ax.plot_surface(X, Y, Z)
-    ax.set_xlabel('Headway')
-    ax.set_ylabel('Velocity')
-    ax.set_zlabel('Probability')
-    plt.show()
 
+if __name__ == '__main__':
+    images_to_video()

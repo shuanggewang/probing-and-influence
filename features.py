@@ -4,7 +4,7 @@ import numpy as np
 class Features:
     def __init__(self):
         return
-    
+
     def weighted_sum(self, state, phi):
         reward=[]
         for v in config.v_space:
