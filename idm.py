@@ -18,7 +18,7 @@ class Idm:
     def find_headway(self, state):
         headway = []
         for i in range(2, len(state.x)):
-            h = state.x[i]-state.x[1]
+            h = state.x[i] - state.x[1]
             if h <= 0:
                 break
             else:

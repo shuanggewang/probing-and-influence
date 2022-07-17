@@ -13,7 +13,7 @@ import utils
 import config
 
 
-WIDTH = 200
+WIDTH = 150
 HEIGHT = 1000
 FPS = 40
 count = 0
@@ -214,7 +214,7 @@ class Environment(object):
             
         self._renderObj()
         
-        pygame.image.save(displaySurface, "./figures/phase_{}.jpg".format(count))
+        pygame.image.save(displaySurface, "./figures/influence_headway_{}.jpg".format(count))
         
         count += 1
 
