@@ -78,6 +78,20 @@ def generate_particles():
         particles.append(phi)
     return particles
 
+
+def plot_stacking(stacking):
+    x = [r'$\varphi_{'+str(i)+'}$' for i in range(config.rows)]
+    stacked = plt.figure()
+    kwargs = dict(alpha=0.3,  ec="k")
+    ax = stacked.add_subplot(111)
+    for i in range(len(stacking)):
+        ax.bar(x, stacking[i], **kwargs, label="{} s".format((i+1)*10), linewidth = 0, width=1)
+    ax.legend(loc='upper right')
+    ax.set_xticks([i*config.graph_gap for i in range(int(config.rows/config.graph_gap))])
+    ax.set_xticklabels([r'$\varphi_{'+str(i*config.graph_gap)+'}$' for i in range(int(config.rows/config.graph_gap))])
+    ax.set_ylabel('$Probability$')
+    stacked.savefig("./figures/probing_headway_{}.jpg".format(len(stacking)), dpi=300)
+
 if __name__ == "__main__":
     particles = generate_particles()
     figure = plt.figure()
@@ -92,3 +106,4 @@ if __name__ == "__main__":
     ax.set_ylabel('Velocity')
     ax.set_zlabel('Probability')
     plt.show()
+

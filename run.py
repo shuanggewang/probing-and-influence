@@ -27,6 +27,8 @@ figure = plt.figure()
 counter = 0
 image = 0
 
+stacking = []
+
 if __name__ == "__main__":
     while(True):
         u_h = [idm.generate_control(state)]
@@ -47,6 +49,11 @@ if __name__ == "__main__":
         ax.set_ylabel('$Probability$')
         figure.canvas.draw()
         if counter == 0:
+            stacking.append(belief.prob)
+            if(len(stacking)==1):
+                pass
+            else:
+                utils.plot_stacking(stacking[1:])
             figure.savefig("./fig/probing_{}.jpg".format(image), dpi=300)
             image +=1
         figure.canvas.flush_events()
