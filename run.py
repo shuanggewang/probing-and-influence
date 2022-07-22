@@ -54,8 +54,9 @@ if __name__ == "__main__":
                 pass
             else:
                 utils.plot_stacking(stacking[1:])
-            figure.savefig("./fig/probing_{}.jpg".format(image), dpi=300)
+            figure.savefig("./figures/probing_{}.jpg".format(image), dpi=300)
             image +=1
+        print(belief.prob)
         figure.canvas.flush_events()
         figure.clf()
         belief = belief.update(features, state, u_r[0], u_h[0], config.d_t)

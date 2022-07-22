@@ -1,6 +1,7 @@
 import config
 import numpy as np
 import math
+from scipy.interpolate import interp1d
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -80,12 +81,19 @@ def generate_particles():
 
 
 def plot_stacking(stacking):
-    x = [r'$\varphi_{'+str(i)+'}$' for i in range(config.rows)]
+    x = [i for i in range(config.rows)]
     stacked = plt.figure()
     kwargs = dict(alpha=0.3,  ec="k")
     ax = stacked.add_subplot(111)
     for i in range(len(stacking)):
+        
+        # bar chart
         ax.bar(x, stacking[i], **kwargs, label="{} s".format((i+1)*10), linewidth = 0, width=1)
+        
+        # line chart
+        f2 = interp1d(x, stacking[i], kind='cubic')
+        xnew = np.linspace(0, 29, num=401, endpoint=True)
+        ax.plot(xnew, f2(xnew), '--', alpha=1)
     ax.legend(loc='upper right')
     ax.set_xticks([i*config.graph_gap for i in range(int(config.rows/config.graph_gap))])
     ax.set_xticklabels([r'$\varphi_{'+str(i*config.graph_gap)+'}$' for i in range(int(config.rows/config.graph_gap))])
