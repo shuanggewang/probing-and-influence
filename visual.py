@@ -68,7 +68,7 @@ class Lane(object):
                 displaySurface, [255, 255, 255], self.marker_vertices)
             self.markerList.append(marker)
 
-            bush_img = pygame.image.load('./images/tree.png')
+            bush_img = pygame.image.load('./images/car-yellow.png')
             bush_img = pygame.transform.scale(bush_img, (30, 30))
             bush_rect = bush_img.get_rect()
 

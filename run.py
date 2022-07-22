@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
     timer = 0
 
-    x, y1, y2 = [], [], []
+    x, y1, y2, y3 = [], [], [], []
 
     plt.ion()
     figure = plt.figure()
@@ -99,30 +99,32 @@ if __name__ == '__main__':
 
         if timer == 0:
             x.append(timer/10)
-            y1.append(abs(controls[6])*config.d_t)
-            y2.append(abs(controls[7])*config.d_t)
+            y1.append(controls[1]*config.d_t)
+            y2.append(controls[6]*config.d_t)
+            y3.append(controls[7]*config.d_t)
         else:
             x.append(timer/10)
-            y1.append(y1[-1]+abs(controls[6])*config.d_t)
-            y2.append(y2[-1]+abs(controls[7])*config.d_t)
+            y1.append(y1[-1]+controls[1]*config.d_t)
+            y2.append(y2[-1]+controls[6]*config.d_t)
+            y3.append(y3[-1]+controls[7]*config.d_t)
+
 
         ax = figure.add_subplot(111)
 
-        #ax.set_xticks([i*config.graph_gap for i in range(int(config.rows/config.graph_gap))])
-        #ax.set_xticklabels([r'$\varphi_{'+str(i*config.graph_gap)+'}$' for i in range(int(config.rows/config.graph_gap))])
+        ax.step(x, y1, where='mid', label='Human Vehicle (Orange)')
+        
+        ax.step(x, y2, where='mid', label='Rear Vehicle 1 (White)')
 
-        ax.step(x, y1, where='mid', label='Rear Vehicle 1')
-
-        ax.step(x, y2, where='mid', label='Rear Vehicle 2')
-
+        ax.step(x, y3, where='mid', label='Rear Vehicle 2 (White)')
+        
         ax.grid(axis='x', color='0.95')
-        ax.legend(title='Rear Vehicles #')
+        ax.legend(title='Vehicles')
         ax.set_xlabel('$Time \hspace{1} (s)$')
         ax.set_ylabel('$Cumulative \hspace{1} Deviation \hspace{1} (m/s)$')
         figure.canvas.draw()
         
         if (min(state.v)>=19 and timer >= 400):
-            figure.savefig("./figures/deviation.jpg", dpi=300)
+            figure.savefig("./figures/deviation1.jpg", dpi=300)
             input()
         
         figure.canvas.flush_events()

@@ -16,7 +16,7 @@ v_space = np.linspace(start=0, stop=36, num=cols)
 h_space = np.linspace(start=0, stop=350, num=rows)
 
 
-car_width, car_length = 3, 6
+car_width, car_length = 4, 8
 
 plot_to_real_ratio = 10
 
