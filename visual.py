@@ -193,7 +193,7 @@ class Environment(object):
 
         # next_speed, next_heading, lane_angle, lane_number, all_lane distance from center, off_road, opp_laneNum, opp_dist 
         for l in self.lane_list:
-            l.relative_move([0, (state.x[0] - prev_state.x[0])*config.plot_to_real_ratio*2])
+            l.relative_move([0, (state.x[0] - prev_state.x[0])*config.plot_to_real_ratio * 2])
         
         # lane changing
         

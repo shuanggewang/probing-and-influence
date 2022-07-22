@@ -55,8 +55,11 @@ def images_to_video():
     fps = 40
     frame_array = []
     files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
+    files = files[1:]
     #for sorting the file names properly
-    files.sort(key = lambda x: int(x[x.index("_")+1:x.index(".")]))
+    print(files)
+    #files.sort(key = lambda x: int(x[x.index("y_")+2:x.index(".")]))
+    files.sort(key = lambda x: int(x.split("_")[2][:x.split("_")[2].index(".")]))
     for i in range(len(files)):
         filename = pathIn + files[i]
         #reading each files

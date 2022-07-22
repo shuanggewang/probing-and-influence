@@ -32,6 +32,6 @@ class Acc:
                 controls = [0 for i in range(len(state.x))]
                 controls[self.id] = i
                 new_state = state.update(controls, config.d_t)
-                reward.append(-(new_state.v[self.head_id] - new_state.v[self.id])**2 - (new_state.x[self.head_id] - new_state.x[self.id] - self.headway)**2)
+                reward.append(-(new_state.v[self.head_id] - new_state.v[self.id])**2 )
             pos = np.argmax(reward) 
             return config.acc_action_space[pos]
